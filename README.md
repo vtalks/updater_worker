@@ -1,2 +1,2 @@
 # updater_worker
-An updater worker
+A worker that updates Talks
