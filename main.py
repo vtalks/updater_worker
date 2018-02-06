@@ -6,28 +6,30 @@ import schedule
 import requests
 
 
-def job():
+def get_random_talk():
     logging.debug("Get a random talk ...")
     # get a random talk
     r = requests.get('https://vtalks.net/api/random-talk/')
     if r.status_code != 200:
         logging.error("Can't fetch a random talk, response status code is", r.status_code)
-        exit(1)
+        return
+    return r.json()
 
-    talk_json = r.json()
 
+def job():
+    talk_json = get_random_talk()
+    if not talk_json:
+        return
     logging.debug(talk_json)
 
 
 def main(argv):
     logging.basicConfig(level=logging.DEBUG)
     logging.debug('Starting updater-worker ...')
-
     job()
-
     # schedule.every(6).hours.do(job)
-    schedule.every(30).seconds.do(job)
-
+    # schedule.every(30).seconds.do(job)
+    schedule.every().minute.do(job)
     while True:
         schedule.run_pending()
         time.sleep(1)
