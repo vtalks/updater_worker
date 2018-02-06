@@ -1,38 +1,32 @@
 import sys
 import time
+import logging
 
 import schedule
 import requests
 
 
-def tweet_content(talk_json):
-    content = ""
-    content += talk_json["title"]
-    content += " "
-    content += "https://vtalks.net/talk/{}".format(talk_json['slug'])
-    return content
-
-
 def job():
-    print("Get a random talk ...")
+    logging.debug("Get a random talk ...")
     # get a random talk
     r = requests.get('https://vtalks.net/api/random-talk/')
     if r.status_code != 200:
-        print("Can't fetch a random talk, response status code is",
-              r.status_code)
+        logging.error("Can't fetch a random talk, response status code is", r.status_code)
         exit(1)
 
     talk_json = r.json()
 
-    print(talk_json)
+    logging.debug(talk_json)
 
 
 def main(argv):
-    print('Starting twitter-worker ...')
+    logging.basicConfig(level=logging.DEBUG)
+    logging.debug('Starting updater-worker ...')
 
     job()
 
-    schedule.every(6).hours.do(job)
+    # schedule.every(6).hours.do(job)
+    schedule.every(30).seconds.do(job)
 
     while True:
         schedule.run_pending()
