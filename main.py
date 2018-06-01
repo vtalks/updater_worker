@@ -48,10 +48,14 @@ def job():
     logging.debug(json.dumps(video_data))
 
     # update youtube stats
-    talk_json["youtube_view_count"] = video_data["statistics"]["viewCount"]
-    talk_json["youtube_like_count"] = video_data["statistics"]["likeCount"]
-    talk_json["youtube_dislike_count"] = video_data["statistics"]["dislikeCount"]
-    talk_json["youtube_favorite_count"] = video_data["statistics"]["favoriteCount"]
+    if "viewCount" not in video_data["statistics"]:
+        talk_json["youtube_view_count"] = video_data["statistics"]["viewCount"]
+    if "likeCount" not in video_data["statistics"]:
+        talk_json["youtube_like_count"] = video_data["statistics"]["likeCount"]
+    if "dislikeCount" not in video_data["statistics"]:
+        talk_json["youtube_dislike_count"] = video_data["statistics"]["dislikeCount"]
+    if "favoriteCount" not in video_data["statistics"]:
+        talk_json["youtube_favorite_count"] = video_data["statistics"]["favoriteCount"]
 
     # update total stats
     talk_json["total_view_count"] = int(talk_json["view_count"]) + \
