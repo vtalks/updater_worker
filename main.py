@@ -78,8 +78,6 @@ def main(argv):
     logging.basicConfig(level=logging.DEBUG)
     logging.debug('Starting updater-worker ...')
     job()
-    exit(0)
-    # schedule.every(6).hours.do(job)
     schedule.every().minute.do(job)
     while True:
         schedule.run_pending()
