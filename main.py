@@ -65,7 +65,7 @@ def job():
 
     # update talk
     talk_id = talk_json["id"]
-    r = requests.put("http://localhost/api/talk/"+str(talk_id)+"/",
+    r = requests.put("http://vtalks.net/api/talk/"+str(talk_id)+"/",
                      json=talk_json)
     if r.status_code != 200:
         logging.error("Can't update a talk, response status code is",
