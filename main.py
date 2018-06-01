@@ -21,7 +21,7 @@ def update_video(youtube_api_key, video_code):
     logging.debug("Fetch video from youtube API ...")
     video_url = "https://www.googleapis.com/youtube/v3/videos"
     payload = {'id': video_code,
-               'part': 'snippet,contentDetails,statistics,topicDetails,status,recordingDetails,player,localizations,liveStreamingDetails',
+               'part': 'snippet,statistics',
                'key': youtube_api_key}
     resp = requests.get(video_url, params=payload)
     if resp.status_code != 200:
