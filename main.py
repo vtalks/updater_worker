@@ -1,3 +1,4 @@
+import os
 import sys
 import time
 import logging
@@ -5,8 +6,6 @@ import json
 
 import schedule
 import requests
-
-YOUTUBE_API_KEY="AIzaSyAdDZRxQSQ70JBqYXeMUGmHE1Z2evOVW4Q"
 
 
 def get_random_talk():
@@ -43,7 +42,7 @@ def job():
 
     # get data from youtube
     talk_video_code = talk_json["code"]
-    video_data = update_video(YOUTUBE_API_KEY, talk_video_code)
+    video_data = update_video(os.environ.get("YOUTUBE_API_KEY"), talk_video_code)
     if not video_data:
         return
     logging.debug(json.dumps(video_data))
