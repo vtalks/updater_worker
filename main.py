@@ -8,16 +8,26 @@ import schedule
 import requests
 
 
+def get_version():
+    file = open("VERSION", "r")
+    return file.read().rstrip("\n")
+
+
 def get_random_talk():
     logging.debug("Get a random talk ...")
-    r = requests.get('https://vtalks.net/api/random-talk/')
+    headers = {'user-agent': 'vtalks/updater-worker/'+get_version()}
+    r = requests.get('https://vtalks.net/api/random-talk/', headers=headers)
     if r.status_code != 200:
-        logging.error("Can't fetch a random talk, response status code is", r.status_code)
+        logging.error("Can't fetch a random talk, response status code is",
+                      r.status_code)
+        logging.debug(json.dumps(r.json()))
         return
+    talk_json = r.json()
+    logging.debug("Got talk" + talk_json["title"])
     return r.json()
 
 
-def update_video(youtube_api_key, video_code):
+def get_youtube_video(youtube_api_key, video_code):
     logging.debug("Fetch video from youtube API ...")
     video_url = "https://www.googleapis.com/youtube/v3/videos"
     payload = {'id': video_code,
@@ -33,19 +43,33 @@ def update_video(youtube_api_key, video_code):
     return video_data
 
 
+def update_talk(talk_json):
+    logging.debug("Update talk to vtalks.net ...")
+    talk_id = talk_json["id"]
+    headers = {'user-agent': 'vtalks/updater-worker/' + get_version()}
+    r = requests.put("https://vtalks.net/api/talk/" + str(talk_id) + "/",
+                     json=talk_json, headers=headers)
+    if r.status_code != 200:
+        logging.error("Can't update a talk, response status code is",
+                      r.status_code)
+        logging.error(r.text)
+        logging.debug(json.dumps(r.json()))
+        return
+    logging.debug("Update talk successfully.")
+
+
 def job():
     # get a talk
     talk_json = get_random_talk()
     if not talk_json:
         return
-    logging.debug(json.dumps(talk_json))
 
     # get data from youtube
     talk_video_code = talk_json["code"]
-    video_data = update_video(os.environ.get("YOUTUBE_API_KEY"), talk_video_code)
+    video_data = get_youtube_video(os.environ.get("YOUTUBE_API_KEY"),
+                                   talk_video_code)
     if not video_data:
         return
-    logging.debug(json.dumps(video_data))
 
     # update youtube stats
     if "viewCount" not in video_data["statistics"]:
@@ -68,21 +92,14 @@ def job():
         int(talk_json["youtube_favorite_count"])
 
     # update talk
-    talk_id = talk_json["id"]
-    r = requests.put("https://vtalks.net/api/talk/"+str(talk_id)+"/",
-                     json=talk_json)
-    if r.status_code != 200:
-        logging.error("Can't update a talk, response status code is",
-                      r.status_code)
-        logging.error(r.text)
-        return
-    logging.debug(json.dumps(r.json()))
+    update_talk(talk_json)
 
 
 def main(argv):
     logging.basicConfig(level=logging.DEBUG)
     logging.debug('Starting updater-worker ...')
     job()
+    exit(0)
     schedule.every().minute.do(job)
     while True:
         schedule.run_pending()
