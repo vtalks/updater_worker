@@ -98,7 +98,7 @@ def main(argv):
     logging.basicConfig(level=logging.ERROR)
     logging.debug('Starting updater-worker ...')
     job()
-    schedule.every(15).minute.do(job)
+    schedule.every(15).minutes.do(job)
     while True:
         schedule.run_pending()
         time.sleep(1)
