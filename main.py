@@ -20,10 +20,8 @@ def get_random_talk():
     if r.status_code != 200:
         logging.error("Can't fetch a random talk, response status code is",
                       r.status_code)
-        logging.debug(json.dumps(r.json()))
         return
-    talk_json = r.json()
-    logging.debug("Got talk" + talk_json["title"])
+    logging.debug(json.dumps(r.json()))
     return r.json()
 
 
@@ -40,6 +38,7 @@ def get_youtube_video(youtube_api_key, video_code):
     video_data = None
     if len(response_json["items"]) > 0:
         video_data = response_json["items"][0]
+    logging.debug(video_data)
     return video_data
 
 
@@ -53,8 +52,8 @@ def update_talk(talk_json):
         logging.error("Can't update a talk, response status code is",
                       r.status_code)
         logging.error(r.text)
-        logging.debug(json.dumps(r.json()))
         return
+    logging.debug(json.dumps(r.json()))
     logging.debug("Update talk successfully.")
 
 
@@ -99,7 +98,6 @@ def main(argv):
     logging.basicConfig(level=logging.ERROR)
     logging.debug('Starting updater-worker ...')
     job()
-    exit(0)
     schedule.every().minute.do(job)
     while True:
         schedule.run_pending()
