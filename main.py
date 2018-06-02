@@ -71,13 +71,13 @@ def job():
         return
 
     # update youtube stats
-    if "viewCount" not in video_data["statistics"]:
+    if "viewCount" in video_data["statistics"]:
         talk_json["youtube_view_count"] = video_data["statistics"]["viewCount"]
-    if "likeCount" not in video_data["statistics"]:
+    if "likeCount" in video_data["statistics"]:
         talk_json["youtube_like_count"] = video_data["statistics"]["likeCount"]
-    if "dislikeCount" not in video_data["statistics"]:
+    if "dislikeCount" in video_data["statistics"]:
         talk_json["youtube_dislike_count"] = video_data["statistics"]["dislikeCount"]
-    if "favoriteCount" not in video_data["statistics"]:
+    if "favoriteCount" in video_data["statistics"]:
         talk_json["youtube_favorite_count"] = video_data["statistics"]["favoriteCount"]
 
     # update total stats
