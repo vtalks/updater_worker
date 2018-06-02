@@ -96,7 +96,7 @@ def job():
 
 
 def main(argv):
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.ERROR)
     logging.debug('Starting updater-worker ...')
     job()
     exit(0)
