@@ -14,19 +14,16 @@ def get_version():
 
 
 def get_random_talk():
-    logging.debug("Get a random talk ...")
     headers = {'user-agent': 'vtalks/updater-worker/'+get_version()}
     r = requests.get('https://vtalks.net/api/random-talk/', headers=headers)
     if r.status_code != 200:
-        logging.error("Can't fetch a random talk, response status code is",
-                      r.status_code)
+        logging.error("Can't fetch a random talk, HTTP {}".format(r.status_code))
         return
     logging.debug(json.dumps(r.json()))
     return r.json()
 
 
 def get_youtube_video(youtube_api_key, video_code):
-    logging.debug("Fetch video from youtube API ...")
     video_url = "https://www.googleapis.com/youtube/v3/videos"
     payload = {'id': video_code,
                'part': 'snippet,statistics',
@@ -43,18 +40,36 @@ def get_youtube_video(youtube_api_key, video_code):
 
 
 def update_talk(talk_json):
-    logging.debug("Update talk to vtalks.net ...")
     talk_id = talk_json["id"]
     headers = {'user-agent': 'vtalks/updater-worker/' + get_version()}
     r = requests.put("https://vtalks.net/api/talk/" + str(talk_id) + "/",
                      json=talk_json, headers=headers)
     if r.status_code != 200:
-        logging.error("Can't update a talk, response status code is",
-                      r.status_code)
+        logging.error("Can't update talk '{} {}': HTTP {}".format(talk_json["id"], talk_json["title"], r.status_code))
         logging.error(r.text)
         return
     logging.debug(json.dumps(r.json()))
-    logging.debug("Update talk successfully.")
+    logging.info("Updated talk '{} {}' successfully.".format(talk_json["id"], talk_json["title"]))
+
+
+def update_youtube_stats(talk_json, youtube_video_data):
+    if "viewCount" in youtube_video_data["statistics"]:
+        talk_json["youtube_view_count"] = youtube_video_data["statistics"]["viewCount"]
+    if "likeCount" in youtube_video_data["statistics"]:
+        talk_json["youtube_like_count"] = youtube_video_data["statistics"]["likeCount"]
+    if "dislikeCount" in youtube_video_data["statistics"]:
+        talk_json["youtube_dislike_count"] = youtube_video_data["statistics"]["dislikeCount"]
+    if "favoriteCount" in youtube_video_data["statistics"]:
+        talk_json["youtube_favorite_count"] = youtube_video_data["statistics"]["favoriteCount"]
+    return talk_json
+
+
+def update_total_stats(talk_json):
+    talk_json["total_view_count"] = int(talk_json["view_count"]) + int(talk_json["youtube_view_count"])
+    talk_json["total_like_count"] = int(talk_json["like_count"]) + int(talk_json["youtube_like_count"])
+    talk_json["total_dislike_count"] = int(talk_json["dislike_count"]) + int(talk_json["youtube_like_count"])
+    talk_json["total_favorite_count"] = int(talk_json["favorite_count"]) + int(talk_json["youtube_favorite_count"])
+    return talk_json
 
 
 def job():
@@ -71,34 +86,20 @@ def job():
         return
 
     # update youtube stats
-    if "viewCount" in video_data["statistics"]:
-        talk_json["youtube_view_count"] = video_data["statistics"]["viewCount"]
-    if "likeCount" in video_data["statistics"]:
-        talk_json["youtube_like_count"] = video_data["statistics"]["likeCount"]
-    if "dislikeCount" in video_data["statistics"]:
-        talk_json["youtube_dislike_count"] = video_data["statistics"]["dislikeCount"]
-    if "favoriteCount" in video_data["statistics"]:
-        talk_json["youtube_favorite_count"] = video_data["statistics"]["favoriteCount"]
+    talk_json = update_youtube_stats(talk_json, video_data)
 
     # update total stats
-    talk_json["total_view_count"] = int(talk_json["view_count"]) + \
-        int(talk_json["youtube_view_count"])
-    talk_json["total_like_count"] = int(talk_json["like_count"]) + \
-        int(talk_json["youtube_like_count"])
-    talk_json["total_dislike_count"] = int(talk_json["dislike_count"]) + \
-        int(talk_json["youtube_like_count"])
-    talk_json["total_favorite_count"] = int(talk_json["favorite_count"]) + \
-        int(talk_json["youtube_favorite_count"])
+    talk_json = update_total_stats(talk_json)
 
     # update talk
     update_talk(talk_json)
 
 
 def main(argv):
-    logging.basicConfig(level=logging.ERROR)
+    logging.basicConfig(level=logging.INFO)
     logging.debug('Starting updater-worker ...')
     job()
-    schedule.every(15).minutes.do(job)
+    schedule.every(5).minutes.do(job)
     while True:
         schedule.run_pending()
         time.sleep(1)
