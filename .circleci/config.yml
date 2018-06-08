@@ -1,0 +1,20 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/python:latest
+    environment:
+      - COVERALLS_REPO_TOKEN: "SVV2qyzwNZy7fwrGpL5pOrsZfqyogd1ZK"
+    steps:
+      - checkout
+      - run:
+          command: |
+            python3 -m venv .venv
+            . .venv/bin/activate
+            pip install -r requirements.txt
+      - run:
+          command: |
+            . .venv/bin/activate
+            make test
+            make cover
+            make coveralls
