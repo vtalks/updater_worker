@@ -4,7 +4,7 @@ jobs:
     docker:
       - image: circleci/python:latest
     environment:
-      - COVERALLS_REPO_TOKEN: "SVV2qyzwNZy7fwrGpL5pOrsZfqyogd1ZK"
+      - COVERALLS_REPO_TOKEN: "7sqbr5JKNqBo51pjxHncknauwA1dyM53q"
     steps:
       - checkout
       - run:
