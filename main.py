@@ -15,7 +15,7 @@ def get_version():
 
 def get_random_talk():
     headers = {'user-agent': 'vtalks/updater-worker/'+get_version()}
-    r = requests.get('https://vtalks.net/api/random-talk/', headers=headers)
+    r = requests.get('https://vtalks.net/api/talk/random-talk/', headers=headers)
     if r.status_code != 200:
         logging.error("Can't fetch a random talk, HTTP {}".format(r.status_code))
         return
