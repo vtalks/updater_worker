@@ -24,7 +24,7 @@ def get_random_talk():
 
 
 def get_youtube_video(youtube_api_key, video_code):
-    video_url = "https://www.googleapis.com/youtube/v3/videos"
+    video_url = "https://www.googleapis.com/youtube/v3/talks"
     payload = {'id': video_code,
                'part': 'snippet,statistics',
                'key': youtube_api_key}
